@@ -1,106 +1,68 @@
 import streamlit as st
-import speech_recognition as sr
+from gtts import gTTS
 from PIL import Image
 import os
 
-# ------------------- PAGE CONFIG -------------------
-st.set_page_config(page_title="Voice to Text App", page_icon="🎤", layout="centered")
+# ------------------- Streamlit Config -------------------
+st.set_page_config(page_title="Text to Speech", page_icon="🗣️", layout="centered")
 
-# ------------------- STYLING -------------------
+# ------------------- Custom CSS -------------------
 st.markdown("""
     <style>
-    .title-box {
-        background-color: #1f7a8c;
-        padding: 20px;
-        border-radius: 12px;
+    .main-title {
+        color: #ffffff;
+        background-color: #2e8b57;
+        padding: 15px;
+        border-radius: 10px;
         text-align: center;
-        color: white;
-        font-size: 32px;
-        font-weight: bold;
-        margin-bottom: 20px;
+        font-size: 35px;
+        margin-bottom: 25px;
     }
-    .stButton>button {
-        font-size: 16px;
+    .stButton > button {
+        font-size: 18px;
         padding: 10px 20px;
         border-radius: 10px;
-        background-color: #198754;
+        background-color: #4CAF50;
         color: white;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ------------------- SIDEBAR -------------------
+# ------------------- Sidebar -------------------
 with st.sidebar:
-    image = Image.open('voice_to_text-removebg-preview.png')
-    st.image(image, width=280)
-    st.markdown("## 👨‍💻 Made by: Masood Khan")
-    st.markdown("📧 [Email Me](mailto:masoodkhanse884@gmail.com)")
-    st.markdown("💻 [Visit GitHub](https://github.com/Masoodkhan884)")
+    st.title("🗣️ Text to Speech")
+    image = Image.open('text_to_speech-removebg-preview.png')
+    st.image(image, width=250)
+    st.markdown("**👨‍💻 Made by:** Masood Khan")
+    st.markdown("📧 [Contact me](mailto:masoodkhanse884@gmail.com)")
+    st.markdown("💻 [GitHub Profile](https://github.com/Masoodkhan884)")
 
-# ------------------- FUNCTION: Voice to Text -------------------
-def voice_to_text(source):
-    r = sr.Recognizer()
-    st.info("🎤 Listening... Please speak clearly")
-    audio = r.listen(source, phrase_time_limit=5)
-    try:
-        text = r.recognize_google(audio)
-        return text, False
-    except sr.UnknownValueError:
-        return "❌ Could not understand the audio.", False
-    except sr.RequestError as e:
-        return f"❌ API Error: {e}", False
+# ------------------- Main Interface -------------------
+st.markdown('<div class="main-title">🎙️ Text to Speech Converter</div>', unsafe_allow_html=True)
 
-# ------------------- FUNCTION: Save and Display Output -------------------
-def display_voice_to_text_output(text):
-    st.success("✅ Transcription complete!")
-    st.markdown("### 📝 Transcribed Text:")
-    st.code(text)
-    with open("voice_to_text_output.txt", "w") as f:
-        f.write(text)
+text = st.text_area("📝 Enter text to convert to speech:", height=150, placeholder="Type your message here...")
 
-# ------------------- MAIN FUNCTION -------------------
-def main_app():
-    st.markdown('<div class="title-box">🎤 Voice to Text Converter</div>', unsafe_allow_html=True)
+voices = ["Alloy", "Echo", "Fable", "Onyx", "Nova", "Shimmer"]
+selected_voice = st.selectbox("🎧 Select a voice style (for UI only):", voices)
 
-    col1, col2, col3, col4 = st.columns(4)
-    recording_stopped = False
-
-    try:
-        microphone = sr.Microphone()
-    except Exception as e:
-        st.error(f"⚠️ Could not access your microphone.\n**Reason:** {e}")
-        return
-
-    with col1:
-        if st.button("🎙️ Start Recording"):
-            with microphone as source:
-                text, recording_stopped = voice_to_text(source)
-            st.session_state.text = text
-            recording_stopped = False
-
-    with col2:
-        if st.button("🛑 Stop Recording"):
-            recording_stopped = True
-            st.info("⏹️ Recording stopped.")
-
-    with col3:
-        if st.button("💬 Convert to Text"):
-            if 'text' in st.session_state:
-                display_voice_to_text_output(st.session_state.text)
+# ------------------- Convert Button -------------------
+if st.button("🔊 Convert to Speech"):
+    if not text.strip():
+        st.warning("⚠️ Please enter some text.")
+    else:
+        try:
+            tts = gTTS(text=text, lang='en', tld='com')
+            output_path = "output.mp3"
+            tts.save(output_path)
+            if os.path.exists(output_path):
+                st.success("✅ Speech generated successfully!")
+                st.markdown("### ▶️ Listen to the audio:")
+                st.audio(output_path, format="audio/mp3")
             else:
-                st.warning("⚠️ Please record your voice first.")
+                st.error("❌ Audio file could not be found after saving.")
+        except Exception as e:
+            st.error(f"❌ Failed to convert text to speech.\n**Reason:** {e}")
 
-    with col4:
-        if st.button("📂 View Saved Output"):
-            try:
-                with open("voice_to_text_output.txt", "r") as f:
-                    st.markdown("### 📄 Output File Content:")
-                    st.code(f.read())
-            except FileNotFoundError:
-                st.error("❌ No output file found yet.")
-
-    st.markdown("---")
-    st.markdown("© 2025 Masood Khan | Powered by Streamlit & Google Speech Recognition")
-
-if __name__ == "__main__":
-    main_app()
+# ------------------- Footer -------------------
+st.markdown("---")
+st.markdown("© 2025 Masood Khan | Powered by [gTTS](https://pypi.org/project/gTTS/) & [Streamlit](https://streamlit.io/)")
