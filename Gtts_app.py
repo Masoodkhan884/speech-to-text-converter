@@ -1,123 +1,72 @@
 import streamlit as st
 from gtts import gTTS
-import os
 from PIL import Image
+import os
 
+# ---------------------------- PAGE CONFIG ----------------------------
+st.set_page_config(page_title="Text to Speech App", page_icon="🗣️", layout="centered")
 
-st.markdown(
-    """
+# ---------------------------- STYLES ----------------------------
+st.markdown("""
     <style>
-    h1 {
-        font-family: 'Source Sans Pro', sans-serif;
-        font-weight: 700;
-        color: rgb(250, 250, 250);
-        padding: 1.25rem 0px 1rem;
-        margin: 0px;
-        line-height: 1.2;
-        background:#708090;
+    .main-title {
+        color: #ffffff;
+        background-color: #2e8b57;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 35px;
     }
-    .st-emotion-cache-h4xjwg {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    height: 3.75rem;
-    background: rgb(14, 17, 23);
-    outline: none;
-    z-index: 999990;
-    display: none;
-}
-.st-emotion-cache-15hul6a {
-    display: inline-flex;
-    -webkit-box-align: center;
-    align-items: center;
-    -webkit-box-pack: center;
-    justify-content: center;
-    font-weight: 400;
-    padding: 0.25rem 0.75rem;
-    border-radius: 0.5rem;
-    min-height: 2.5rem;
-    margin: 0px;
-    line-height: 1.6;
-    color: inherit;
-    width: auto;
-    user-select: none;
-    background-color: rgb(32 190 14);
-    border: 1px solid rgba(250, 250, 250, 0.2);
-} 
-.st-emotion-cache-qgowjl p {
-    word-break: break-word;
-    margin-bottom: 0px;
-    font-size: 25px;
-}
-.st-emotion-cache-1mi2ry5 {
-    display: flex;
-    -webkit-box-pack: justify;
-    justify-content: space-between;
-    -webkit-box-align: start;
-    align-items: start;
-    padding: 0.25rem 1.5rem 1.5rem;
-}
-
+    .stTextInput > div > div > input {
+        font-size: 18px;
+    }
+    .stTextArea textarea {
+        font-size: 18px;
+    }
+    .stButton > button {
+        font-size: 18px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        background-color: #4CAF50;
+        color: white;
+    }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
+# ---------------------------- SIDEBAR ----------------------------
 with st.sidebar:
-    st.title("Text to Speech")
-    # Logo insertion
-    image =Image.open('text_to_speech-removebg-preview.png')
-    st.image(image, width=275, caption=None)
-    st.title("Made By: \n MASOOD KHAN")
-    st.title("Contact me at \n masoodkhanse884@gmail.com")
-    # Title of the app
-    st.title("Go To my GitHub")
-    # Create a button and check if it is clicked
-    st.markdown('[Click here to visit my GitHub](https://github.com/Masoodkhan884)')
-
-
-# create a function to convert text to speech
-def text_to_speech(text, voice):
-    tts = gTTS(text=text, lang='en', tld='com')
-    tts.save("output.mp3")
-    return "output.mp3"
-
-# create a function to display audio
-def display_audio(file):
-    audio_file = open(file, 'rb')
-    st.audio(audio_file, format='audio/mp3')
-
-
-    # create a function to display the text input
-def display_text_input():
-    text = st.text_area("Enter text to convert to speech")
-    return text
-
-
-# create a function to display the voice option
-def display_voice_option():
-    voices = ["alloy", "echo", "fable", "onyx", "nova","shimmer"]
-    select = st.selectbox("Select Voice", voices)
-    return select
-
-# create a function to display the convert button
-def display_convert_button():
-    if st.button("Convert to Speech"):
-        return True
-    return False
-
-# create a function to display the main app
-def main_app():
-    st.title("Text to Speech App")
-    text = display_text_input()
-    select_voice = display_voice_option()
-    convert = display_convert_button()
-    if convert:
-        file = text_to_speech(text, select_voice)
-        display_audio(file)
-
-if __name__ == "__main__":
-    main_app()
-
+    st.title("🗣️ Text to Speech")
     
+    image = Image.open('text_to_speech-removebg-preview.png')
+    st.image(image, width=250)
+    
+    st.markdown("**👨‍💻 Made by:** Masood Khan")
+    st.markdown("📧 [Contact me](mailto:masoodkhanse884@gmail.com)")
+    st.markdown("💻 [Visit My GitHub](https://github.com/Masoodkhan884)")
+
+# ---------------------------- MAIN APP ----------------------------
+st.markdown('<div class="main-title">🎙️ Text to Speech Converter</div>', unsafe_allow_html=True)
+st.markdown("### 📝 Enter your text below:")
+
+text = st.text_area("Type something you want to hear", height=150, placeholder="E.g., Hello, welcome to my Streamlit app!")
+
+st.markdown("### 🎧 Choose a voice style (for UI only):")
+voices = ["Alloy", "Echo", "Fable", "Onyx", "Nova", "Shimmer"]
+selected_voice = st.selectbox("Select a voice", voices)
+
+# Convert Button
+if st.button("🔊 Convert to Speech"):
+    if text.strip() == "":
+        st.warning("⚠️ Please enter some text to convert.")
+    else:
+        with st.spinner("Generating speech..."):
+            tts = gTTS(text=text, lang='en', tld='com')
+            tts.save("output.mp3")
+            st.success("✅ Speech generated successfully!")
+            st.markdown("### ▶️ Play the audio below:")
+            st.audio("output.mp3", format="audio/mp3")
+
+# Footer
+st.markdown("---")
+st.markdown("© 2025 Masood Khan | Powered by [gTTS](https://pypi.org/project/gTTS/) & [Streamlit](https://streamlit.io/)")
+
